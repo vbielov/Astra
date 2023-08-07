@@ -12,8 +12,14 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(LIBRARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 
-find_package(OpenGL REQUIRED)
-find_package(X11 REQUIRED)
+if (UNIX)
+    find_package(OpenGL REQUIRED)
+    find_package(X11 REQUIRED)
+endif (UNIX)
+
+if(WIN32)
+    add_definitions(-DGLEW_STATIC)
+endif (WIN32)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/glfw-3.3.8)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/glew-2.2.0/build/cmake)
@@ -36,7 +42,14 @@ file(GLOB IMGUI_SOURCE_FILES
 list(APPEND SOURCE_FILES ${IMGUI_SOURCE_FILES})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
-include_directories( ${OPENGL_INCLUDE_DIRS} )
-target_link_libraries(${PROJECT_NAME} X11 OpenGL::GL glfw glew)
+if(UNIX)
+    add_executable(${PROJECT_NAME} ${SOURCE_FILES})
+    include_directories( ${OPENGL_INCLUDE_DIRS} )
+    target_link_libraries(${PROJECT_NAME} OpenGL::GL X11 glfw glew)
+endif (UNIX)
+
+if(WIN32)
+    add_executable(${PROJECT_NAME} WIN32 ${SOURCE_FILES}) # WIN32 to prevent terminal
+    target_link_libraries(${PROJECT_NAME} glfw glew_s)
+endif (WIN32)
