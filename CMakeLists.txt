@@ -27,6 +27,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/lib/glew-2.2.0/build/cmake)
 include_directories(
     ${INCLUDE_DIR} 
     ${VENDOR_DIR}
+    ${VENDOR_DIR}/stb_image/
     ${VENDOR_DIR}/imgui-1.89.8/
     ${VENDOR_DIR}/imgui-1.89.8/backends
     ${LIBRARY_DIR}/glew-2.2.0/include

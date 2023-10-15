@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/include",
                 "${workspaceFolder}/lib/glew-2.2.0/include",
-                "${workspaceFolder}/lib/glfw-3.3.8/include"
+                "${workspaceFolder}/lib/glfw-3.3.8/include",
+                "${workspaceFolder}/vendor"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
