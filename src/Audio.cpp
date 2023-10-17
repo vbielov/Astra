@@ -5,9 +5,11 @@
 
 std::vector<Audio::AudioSource*> Audio::s_sources = {};
 
-Audio::Audio(const char* wavFilePath) : m_audioFileData(nullptr), m_fileSize(0)
+Audio::Audio(const char* wavFilePath) 
+    : m_audioFileData(nullptr), m_fileSize(0)
 {
-    Audio::s_sources.reserve(10);
+    // TODO: Make it C++.
+
     // Open the .wav file
     FILE* pFile = fopen(wavFilePath, "rb");
     if (pFile == NULL) 
@@ -36,20 +38,43 @@ Audio::Audio(const char* wavFilePath) : m_audioFileData(nullptr), m_fileSize(0)
     fclose(pFile);
 }
 
-void Audio::Play() 
-{
-    AudioSource* source = new AudioSource(m_audioFileData, m_fileSize);
-    s_sources.push_back(source);
-}
-
 Audio::~Audio() 
 {
     for(int i = 0; i < s_sources.size(); i++)
-    {
         delete s_sources[i];
-    }
+
     s_sources.clear();
-    // free memory
+    free(m_audioFileData);
+}
+
+void Audio::Play(float volume) 
+{
+    // Removes sounds from the front and pushes new to the back.
+    // Didn't use Queue because need to remove AudioSource's from middle of vector
+    const int MAX_SOUND_SOURCES = 8;
+    if(s_sources.size() >= MAX_SOUND_SOURCES)
+    {
+        delete s_sources.front();
+        s_sources.erase(s_sources.begin());
+    }
+
+    AudioSource* source = new AudioSource(m_audioFileData, m_fileSize, volume);
+    s_sources.push_back(source);
+}
+
+void Audio::Update()
+{
+    // Deletes sounds that are done playing
+    for(int i = 0; i < s_sources.size(); i++)
+    {
+        if(s_sources[i]->isPlaying == false)
+        {
+            AudioSource* ptr = s_sources[i];
+            s_sources.erase(s_sources.begin() + i);
+            delete ptr;
+            i--;
+        }
+    }
 }
 
 void Audio::DataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) 
@@ -58,40 +83,80 @@ void Audio::DataCallback(ma_device* pDevice, void* pOutput, const void* pInput, 
     if (pDecoder == nullptr)
         return;
 
-    ma_uint64 frameCurser;
-    ma_decoder_get_cursor_in_pcm_frames(pDecoder, &frameCurser);
-    ma_uint64 framesLength;
-    ma_decoder_get_length_in_pcm_frames(pDecoder, &framesLength);
-    if(frameCurser >= framesLength)
-    {
-        int size = s_sources.size();
-        int it = FindIterator(pDevice);
-        std::cout << "End" << std::endl;
-        if(it != -1)
-            s_sources.erase(s_sources.begin() + it);
-    }
-    
-    ma_decoder_read_pcm_frames(pDecoder, pOutput, frameCount, nullptr);
-    (void)pInput; // Unused
-
-    // Apply volume
-    // float* pSamples = (float*)pOutput;
-    // for (ma_uint32 i = 0; i < frameCount * pDevice->playback.channels; ++i) 
-    // {
-    //     pSamples[i] *= pDecoder->volume;
-    // }
-
-}
-
-int Audio::FindIterator(ma_device *pDevice)
-{
+    // Find pointer
+    AudioSource* sourcePointer = nullptr;
     for(int i = 0; i < s_sources.size(); i++)
     {
-        if (&(s_sources[i]->m_device) == pDevice) 
+        if (&(s_sources[i]->device) == pDevice)
         {
-            // delete s_sources[i];
-            return i;
+            sourcePointer = s_sources[i];
         }
     }
-    return -1;
+
+    // Mark audio source as ready to delete, 
+    // because calling ma_device_uninit in callback is forbidden
+    ma_uint64 frameCurser, framesLength;
+    ma_decoder_get_cursor_in_pcm_frames(pDecoder, &frameCurser);
+    ma_decoder_get_length_in_pcm_frames(pDecoder, &framesLength);
+    if(sourcePointer != nullptr && frameCurser >= framesLength)
+    {
+        sourcePointer->isPlaying = false;
+        return;
+    }
+
+    ma_decoder_read_pcm_frames(pDecoder, pOutput, frameCount, nullptr);
+    
+    // Apply volume (only after read_pcm)
+    // NOTE: Only supports ma_format_s16 audio
+    int16_t* pOutputBuffer = (int16_t*)pOutput;
+    if(sourcePointer != nullptr)
+    {
+        for (ma_uint32 i = 0; i < frameCount * pDevice->playback.channels; ++i) 
+        {
+            pOutputBuffer[i] = (int16_t)(pOutputBuffer[i] * sourcePointer->volume);
+        }
+    }
+    
+    (void)pInput; // Unused
+}
+
+Audio::AudioSource::AudioSource(void *audioFileData, size_t fileSize, float volume) 
+    : device(), decoder(), isPlaying(false), volume(volume)
+{
+    ma_result result = ma_decoder_init_memory(audioFileData, fileSize, NULL, &decoder);
+    if (result != MA_SUCCESS)
+    {
+        std::cerr << "Audio Error: Failed to initialize decoder" << std::endl;
+        return;
+    }
+
+    ma_device_config deviceConfig = ma_device_config_init(ma_device_type_playback);
+    deviceConfig.playback.format   = decoder.outputFormat;
+    deviceConfig.playback.channels = decoder.outputChannels;
+    deviceConfig.sampleRate        = decoder.outputSampleRate;
+    deviceConfig.dataCallback      = Audio::DataCallback;
+    deviceConfig.pUserData         = &decoder;
+
+    result = ma_device_init(NULL, &deviceConfig, &device);
+    if (result != MA_SUCCESS) 
+    {
+        std::cerr << "Audio Error: Failed to initialize playback device" << std::endl;
+        return;
+    }
+
+    result = ma_device_start(&device);
+    if (result != MA_SUCCESS) 
+    {
+        std::cerr << "Audio Error: Failed to start playback device" << std::endl;
+        ma_device_uninit(&device);
+        return;
+    }
+
+    isPlaying = true;
+}
+
+Audio::AudioSource::~AudioSource()
+{
+    ma_device_uninit(&device);
+    ma_decoder_uninit(&decoder);
 }

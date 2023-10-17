@@ -59,7 +59,7 @@ OpenGL::OpenGL()
     {
         char infoLog[512];
         glGetProgramInfoLog(m_shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::LINK_FAILED\n" << infoLog << std::endl;
+        std::cerr << "OpenGL Error: shaderProgram LINK_FAILED\n" << infoLog << std::endl;
     }
 
     glUseProgram(m_shaderProgram);
@@ -197,7 +197,7 @@ unsigned int OpenGL::CompileShader(const char* source, int type) const
     {
         glGetShaderInfoLog(shader, 512, NULL, infoLog);
         const char* typeStr = type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT";
-        std::cout << "ERROR::SHADER::" << typeStr << "::COMPILATION_FAILED\n" << infoLog << std::endl;
+        std::cerr << "OpenGL Error: " << typeStr << " Shader COMPILATION_FAILED\n" << infoLog << std::endl;
         return 0;
     }
 
@@ -206,7 +206,7 @@ unsigned int OpenGL::CompileShader(const char* source, int type) const
 
 void OpenGL::SendUniformSampler2D(const char* uniformName, int unit) const
 {
-    // TODO: optimize with hash table
+    // TODO: optimize with hash table, error handling when location not found
     glUniform1i(glGetUniformLocation(m_shaderProgram, uniformName), unit);
 }
 

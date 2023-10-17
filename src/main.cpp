@@ -6,13 +6,12 @@
 int main()
 {
     Window window = Window("Window", 720, 480, true);
+
     Input input = Input(window.GetGLFW());
     OpenGL openGL = OpenGL();
     Audio audio = Audio("res/game_over.wav");
     Image testUV = Image("res/test.png");
 
-
-    
     // Render loop
     while (window.IsOpen())
     {
@@ -21,7 +20,7 @@ int main()
 
         // Debug with ImGui
         ImGui::SetNextWindowPos(ImVec2(0, 0));
-        ImGui::SetNextWindowSize(ImVec2(200, 60));
+        ImGui::SetNextWindowSize(ImVec2(200, 80));
         if(ImGui::Begin("Debug", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground))
         {
             ImGui::TextUnformatted(("window: " + std::to_string(Window::width) + "x" + std::to_string(Window::height)).c_str());
@@ -31,14 +30,16 @@ int main()
         ImGui::End();
 
         // Check input
-        if(Input::IsKeyPressed(GLFW_KEY_W))
-        {
-            audio.Play();
-        }
+        if(Input::GetKeyDown(GLFW_KEY_SPACE))
+            audio.Play(1.0f); // Play sound
 
-        if(Input::IsKeyPressed(GLFW_KEY_ESCAPE))
+        if(Input::GetKeyDown(GLFW_KEY_ESCAPE))
             return 0;
 
+
+
+        Audio::Update();
+        Input::Update();
         openGL.Render();
         window.EndFrame();
     }
