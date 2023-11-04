@@ -1,6 +1,7 @@
 #include "RectBatch.hpp"
 
-RectBatch::RectBatch() : Batch(), m_lastImage(nullptr)
+RectBatch::RectBatch() 
+    : Batch(), m_lastImage(nullptr)
 {
     this->bind();
     // Shaders

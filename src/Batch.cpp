@@ -88,6 +88,11 @@ unsigned int Batch::compileShader(const char *source, int type)
     return shader;
 }
 
+int Batch::getIndexCount() const
+{
+    return m_usedIndices;
+}
+
 std::unique_ptr<float[]> Batch::hexToRGB(int hex)
 {
     std::unique_ptr<float[]> rgb(new float[3]);

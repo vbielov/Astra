@@ -24,6 +24,7 @@ int main()
 
         renderer->drawRect(-1.0f, -1.0f, 2.0f, 2.0f, 0x000020);
         renderer->drawImage(&testUV, 0, 0, 4096, 4096, -0.5f, -0.5f, 1, 1);
+        renderer->drawLine(0, 0, 1, 1, 0xFF0000);
 
         // Debug with ImGui
         ImGui::SetNextWindowPos(ImVec2(0, 0));

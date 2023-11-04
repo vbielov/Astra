@@ -40,6 +40,25 @@ void Renderer::drawRect(float x, float y, float width, float height, int color)
     m_rectBatch.add(&vertices[0], nullptr, 4, 0);
 }
 
+void Renderer::drawLine(float fromX, float fromY, float toX, float toY, int color)
+{
+    std::unique_ptr<float[]> rgb = Batch::hexToRGB(color);
+
+    float vertices[] = {
+        fromX,  fromY,  rgb[0], rgb[1], rgb[2],
+        toX,    toY,    rgb[0], rgb[1], rgb[2],
+    };
+
+    unsigned int usedIndices = m_lineBatch.getIndexCount();
+
+    unsigned int indices[] = {
+        usedIndices + 0,
+        usedIndices + 1
+    };
+    
+    m_lineBatch.add(&vertices[0], &indices[0], 2, 2);
+}
+
 void Renderer::fillBackground(int color)
 {
     std::unique_ptr<float[]> rgb = Batch::hexToRGB(color);
@@ -50,4 +69,5 @@ void Renderer::fillBackground(int color)
 void Renderer::render()
 {
     m_rectBatch.render();
+    m_lineBatch.render();
 }
