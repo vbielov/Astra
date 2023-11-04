@@ -11,21 +11,30 @@
 class Window
 {
 public:
-    static int width;
-    static int height;
+    GLFWwindow* glfwWindow;
+    int width;
+    int height;
     int fps;
+    float deltaTime;
 
-    Window(const char* name, int width, int height, bool vsync = true);
-    ~Window();
-    bool IsOpen();
-    GLFWwindow* GetGLFW();
-    void EndFrame() const;
+    float xOffset;
+    float yOffset;
+    float scale;
+    
+    static Window& instance();
+    void init(const char* name, int width, int height, bool vsync = true);
+    bool isOpen();
+    void endFrame() const;
 
 private:
-    GLFWwindow* m_window;
     int m_frameCounter;
-    double m_previousTime;
+    double m_previousTimeDelta;
+    double m_previousTimeFPS;
 
-    static void FramebufferSizeCallback(GLFWwindow* window, int width, int height);
-    void CalculateFPS();
+    Window();
+    ~Window();
+
+    static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+    void calculateFPS();
+    void calculateDeltaTime();
 };

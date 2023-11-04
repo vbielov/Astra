@@ -1,15 +1,16 @@
 #include "Window.hpp"
 
-int Window::width = 0;
-int Window::height = 0;
-
-Window::Window(const char *name, int width, int height, bool vsync)
-    :   fps(0), m_window(nullptr), 
-        m_frameCounter(0), m_previousTime(0.0)
+Window &Window::instance()
 {
-    Window::width = width;
-    Window::height = height;
+    static Window INSTANCE;
+    return INSTANCE;
+}
 
+void Window::init(const char* name, int width, int height, bool vsync)
+{
+    this->width = width;
+    this->height = height;
+    
     if(!glfwInit())
     {
         std::cout << "Error: GLFW can't init." << std::endl;
@@ -20,15 +21,15 @@ Window::Window(const char *name, int width, int height, bool vsync)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    m_window = glfwCreateWindow(width, height, name, nullptr, nullptr);
+    glfwWindow = glfwCreateWindow(width, height, name, nullptr, nullptr);
 
-    if (!m_window) {
+    if (!glfwWindow) {
         std::cout << "Error: Window is not created." << std::endl;
         glfwTerminate();
         return;
     }
 
-    glfwMakeContextCurrent(m_window);
+    glfwMakeContextCurrent(glfwWindow);
     glfwSwapInterval(vsync);
 
     GLenum err = glewInit();
@@ -41,17 +42,25 @@ Window::Window(const char *name, int width, int height, bool vsync)
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGui_ImplGlfw_InitForOpenGL(m_window, true);
+    ImGui_ImplGlfw_InitForOpenGL(glfwWindow, true);
     ImGui_ImplOpenGL3_Init();
 
-    glfwSetFramebufferSizeCallback(m_window, FramebufferSizeCallback);
+    glfwSetFramebufferSizeCallback(glfwWindow, framebufferSizeCallback);
 
-    m_previousTime = glfwGetTime();
+    m_previousTimeFPS = glfwGetTime();
+    m_previousTimeDelta = glfwGetTime();
+}
+
+Window::Window()
+    :   glfwWindow(nullptr), width(0), height(0), fps(0), deltaTime(0.0f), xOffset(0.0f), yOffset(0.0f), scale(1.0f),
+        m_frameCounter(0), m_previousTimeDelta(0.0), m_previousTimeFPS(0.0)
+{
+
 }
 
 Window::~Window()
 {
-    if(m_window)
+    if(glfwWindow)
     {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
@@ -60,12 +69,14 @@ Window::~Window()
     }
 }
 
-bool Window::IsOpen()
+// Don't use it anywhere except of game loop while(isOpen())
+bool Window::isOpen()
 {
-    bool isOpen = m_window && !glfwWindowShouldClose(m_window);
+    bool isOpen = glfwWindow && !glfwWindowShouldClose(glfwWindow);
     if(isOpen)
     {
-        CalculateFPS();
+        calculateFPS();
+        calculateDeltaTime();
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -75,39 +86,43 @@ bool Window::IsOpen()
     return isOpen;
 }
 
-GLFWwindow* Window::GetGLFW()
-{
-    return m_window;
-}
-
-void Window::EndFrame() const
+void Window::endFrame() const
 {
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-    glfwSwapBuffers(m_window);
+    glfwSwapBuffers(glfwWindow);
     glfwPollEvents();
 }
 
-void Window::FramebufferSizeCallback(GLFWwindow *window, int width, int height)
+void Window::framebufferSizeCallback(GLFWwindow *window, int width, int height)
 {
     glViewport(0, 0, width, height);
-    Window::width = width;
-    Window::height = height;
+    Window* instance = &Window::instance();
+    instance->width = width;
+    instance->height = height;
 }
 
-void Window::CalculateFPS()
+void Window::calculateFPS()
 {
     // Measure speed
     double currentTime = glfwGetTime();
     m_frameCounter++;
     // If a second has passed.
-    if ( currentTime - m_previousTime >= 1.0 )
+    if ( currentTime - m_previousTimeFPS >= 1.0 )
     {
         // store frame count
         fps = m_frameCounter;
 
         m_frameCounter = 0;
-        m_previousTime = currentTime;
+        // m_previousTime will be assigned in IsOpen()
+        m_previousTimeFPS = glfwGetTime();
     }
+}
+
+void Window::calculateDeltaTime()
+{
+    double currentTime = glfwGetTime();
+    deltaTime = currentTime - m_previousTimeDelta;
+    m_previousTimeDelta = currentTime;
 }

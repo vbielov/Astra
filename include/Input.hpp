@@ -6,21 +6,24 @@
 class Input
 {
 public:
-    Input(GLFWwindow* glfwWindow);
-    static bool GetKeyDown(int key);
-    static bool GetKey(int key);
-    static bool GetKeyUp(int key);
-    static void Update();
+    static Input& instance();
+    void init(GLFWwindow* glfwWindow);
+    bool getKeyDown(int key);
+    bool getKey(int key);
+    bool getKeyUp(int key);
+    void update();
 
 private:
+    GLFWwindow* m_window;
+
     enum KeyState {
         KEY_RELEASED_LONG = 0,
         KEY_RELEASED_ONCE = 1,
         KEY_PRESSED_LONG = 2,
         KEY_PRESSED_ONCE = 3
     };
+    std::array<KeyState, GLFW_KEY_LAST + 1> m_keys;
 
-    static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-    static GLFWwindow* s_window;
-    static std::array<KeyState, GLFW_KEY_LAST + 1> s_keys;
+    Input();
+    static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 };

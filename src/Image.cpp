@@ -13,14 +13,19 @@ Image::Image(const char* pngPath)
     int BPP;
 	unsigned char* localBuffer = stbi_load(pngPath, &width, &height, &BPP, 4); // RGBA - 4 values
 
-    CreateTexture(localBuffer, width, height);
+    createTexture(localBuffer, width, height);
     // WriteImageHeaderFile(localBuffer);
 
     if(localBuffer)
 		stbi_image_free(localBuffer);
 }
 
-void Image::CreateTexture(unsigned char* bufferSource, int width, int height)
+Image::~Image()
+{
+    glDeleteTextures(1, &m_id);
+}
+
+void Image::createTexture(unsigned char* bufferSource, int width, int height)
 {
     glGenTextures(1, &m_id);
     glBindTexture(GL_TEXTURE_2D, m_id);
@@ -34,18 +39,13 @@ void Image::CreateTexture(unsigned char* bufferSource, int width, int height)
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Image::Bind(unsigned int slot) const
+void Image::bind(unsigned int slot) const
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_2D, m_id);
 }
 
-void Image::Unbind() const
+void Image::unbind() const
 {
     glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-Image::~Image()
-{
-    glDeleteTextures(1, &m_id);
 }

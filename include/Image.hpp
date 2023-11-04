@@ -16,11 +16,11 @@ public:
     Image(const char* pngPath);
     ~Image();
 
-    void Bind(unsigned int slot) const;
-    void Unbind() const;
+    void bind(unsigned int slot) const;
+    void unbind() const;
 
 private:
     unsigned int m_id;
 
-    void CreateTexture(unsigned char* bufferSource, int width, int height);
+    void createTexture(unsigned char* bufferSource, int width, int height);
 };

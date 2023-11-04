@@ -1,50 +1,66 @@
 #include "Input.hpp"
 
-GLFWwindow* Input::s_window = nullptr;
-std::array<Input::KeyState, GLFW_KEY_LAST + 1> Input::s_keys;
-
-Input::Input(GLFWwindow* glfwWindow)
+Input &Input::instance()
 {
-    glfwSetKeyCallback(glfwWindow, Input::KeyCallback);
-    std::fill(s_keys.begin(), s_keys.end(), KEY_RELEASED_LONG);
-    Input::s_window = glfwWindow;
+    static Input INSTANCE;
+    return INSTANCE;
 }
 
-bool Input::GetKeyDown(int key)
+void Input::init(GLFWwindow *glfwWindow)
 {
-    return s_keys[key] == KEY_PRESSED_ONCE;
+    glfwSetKeyCallback(glfwWindow, Input::keyCallback);
+    std::fill(m_keys.begin(), m_keys.end(), KEY_RELEASED_LONG);
+    m_window = glfwWindow;
 }
 
-bool Input::GetKey(int key)
+bool Input::getKeyDown(int key)
 {
-    return s_keys[key] == KEY_PRESSED_ONCE || s_keys[key] == KEY_PRESSED_ONCE;
+    return m_keys[key] == KEY_PRESSED_ONCE;
 }
 
-bool Input::GetKeyUp(int key)
+bool Input::getKey(int key)
 {
-    return s_keys[key] == KEY_RELEASED_ONCE;
+    return m_keys[key] == KEY_PRESSED_ONCE || m_keys[key] == KEY_PRESSED_LONG;
 }
 
-// NOTE: call in the end of loop
-void Input::Update()
+bool Input::getKeyUp(int key)
 {
-    for(int i = 0; i < s_keys.size(); i++)
+    return m_keys[key] == KEY_RELEASED_ONCE;
+}
+
+// NOTE: call in the end of game loop
+void Input::update()
+{
+    for(auto& key : m_keys)
     {
-        if(s_keys[i] == KEY_PRESSED_ONCE)
-            s_keys[i] = KEY_PRESSED_LONG;
-        else if(s_keys[i] == KEY_RELEASED_ONCE)
-            s_keys[i] = KEY_RELEASED_LONG;
+        if(key == KEY_PRESSED_ONCE)
+        {
+            key = KEY_PRESSED_LONG;
+            continue;
+        }
+        if(key == KEY_RELEASED_ONCE)
+        {
+            key = KEY_RELEASED_LONG;
+        }
     }
 }
 
-void Input::KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
+Input::Input()
+    : m_window(nullptr), m_keys()
 {
+
+}
+
+void Input::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+    Input* input = &Input::instance();
     if (action == GLFW_PRESS)
     {
-        s_keys[key] = KEY_PRESSED_ONCE;
+        input->m_keys[key] = KEY_PRESSED_ONCE;
+        return;
     }
-    else if (action == GLFW_RELEASE)
+    if (action == GLFW_RELEASE)
     {
-        s_keys[key] = KEY_RELEASED_ONCE;
+        input->m_keys[key] = KEY_RELEASED_ONCE;
     }
 }
