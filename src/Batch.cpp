@@ -93,15 +93,3 @@ int Batch::getIndexCount() const
     return m_usedIndices;
 }
 
-std::unique_ptr<float[]> Batch::hexToRGB(int hex)
-{
-    std::unique_ptr<float[]> rgb(new float[3]);
-    int i = 3;
-    // for some odd reason, the release version didn't liked while loop here
-    for(; i >= 0 ;) 
-    {
-        rgb[--i] = (float)(hex & 0xFF) / 255.0f;
-        hex >>= 8; 
-    }
-    return rgb;
-}

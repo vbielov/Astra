@@ -1,6 +1,6 @@
 #include "Input.hpp"
 
-Input &Input::instance()
+Input& Input::instance()
 {
     static Input INSTANCE;
     return INSTANCE;

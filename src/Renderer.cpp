@@ -28,7 +28,8 @@ void Renderer::drawImage(Image* image, float sx, float sy, float sWidth, float s
 
 void Renderer::drawRect(float x, float y, float width, float height, int color)
 {
-    std::unique_ptr<float[]> rgb = Batch::hexToRGB(color);
+    float rgb[3];
+    hexToRGB(color, rgb);
 
     float vertices[] = {
         x,          y + height, 0.0f, rgb[0], rgb[1], rgb[2], -1, -1,
@@ -42,11 +43,12 @@ void Renderer::drawRect(float x, float y, float width, float height, int color)
 
 void Renderer::drawLine(float fromX, float fromY, float toX, float toY, int color)
 {
-    std::unique_ptr<float[]> rgb = Batch::hexToRGB(color);
+    float rgb[3];
+    hexToRGB(color, rgb);
 
     float vertices[] = {
         fromX,  fromY,  rgb[0], rgb[1], rgb[2],
-        toX,    toY,    rgb[0], rgb[1], rgb[2],
+        toX,    toY,    rgb[0], rgb[1], rgb[2]
     };
 
     unsigned int usedIndices = m_lineBatch.getIndexCount();
@@ -61,7 +63,9 @@ void Renderer::drawLine(float fromX, float fromY, float toX, float toY, int colo
 
 void Renderer::fillBackground(int color)
 {
-    std::unique_ptr<float[]> rgb = Batch::hexToRGB(color);
+    float rgb[3];
+    hexToRGB(color, rgb);
+
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(rgb[0], rgb[1], rgb[2], 1.0f);
 }
@@ -70,4 +74,15 @@ void Renderer::render()
 {
     m_rectBatch.render();
     m_lineBatch.render();
+}
+
+// color needs float[3]
+void Renderer::hexToRGB(int hex, float* color)
+{
+    // NOTE: I just don't understand why I can't use unique pointers here. 
+    for(int i = 2; i >= 0; --i) 
+    {
+        color[i] = (float)(hex & 0xFF) / 255.0f;
+        hex >>= 8; 
+    }
 }

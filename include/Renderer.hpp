@@ -15,6 +15,8 @@ public:
 
     void render();
 
+    static void hexToRGB(int hex, float* color);
+
 private:
     RectBatch m_rectBatch;
     LineBatch m_lineBatch;

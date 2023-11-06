@@ -1,6 +1,6 @@
 #include "Window.hpp"
 
-Window &Window::instance()
+Window& Window::instance()
 {
     static Window INSTANCE;
     return INSTANCE;

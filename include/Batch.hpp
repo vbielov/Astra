@@ -16,8 +16,7 @@ public:
     virtual void render() = 0;
 
     int getIndexCount() const;
-
-    static std::unique_ptr<float[]> hexToRGB(int hex);
+    
 protected:
     unsigned int m_maxVertices;
     unsigned int m_usedVertices;

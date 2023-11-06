@@ -63,7 +63,7 @@ LineBatch::LineBatch()
 
 void LineBatch::render()
 {
-    if(m_usedVertices == 0)
+    if(m_usedIndices == 0)
     {
         return;
     }
@@ -72,6 +72,7 @@ void LineBatch::render()
     sendMVPUniform();
     glDrawElements(GL_LINES, m_usedIndices, GL_UNSIGNED_INT, 0);
     m_usedVertices = 0;
+    m_usedIndices = 0;
     this->unBind();
 }
 
@@ -84,7 +85,7 @@ void LineBatch::add(const float* vertices, const unsigned int* indices, int vert
 
     this->bind();
     glBufferSubData(GL_ARRAY_BUFFER, m_usedVertices * sizeof(LineVertex), vertexCount * sizeof(LineVertex), vertices);
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, m_usedIndices * sizeof(LineVertex), indexCount * sizeof(LineVertex), indices);
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, m_usedIndices * sizeof(unsigned int), indexCount * sizeof(unsigned int), indices);
 
     m_usedVertices += vertexCount;
     m_usedIndices += indexCount;

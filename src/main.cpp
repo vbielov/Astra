@@ -2,6 +2,7 @@
 #include "Renderer.hpp"
 #include "Audio.hpp"
 #include "Input.hpp"
+#include "Polygon.hpp"
 
 int main()
 {
@@ -17,14 +18,19 @@ int main()
     AudioManager* audioManager = &AudioManager::instance();
     Audio audio = Audio("res/game_over.wav");
 
+    Vector points[] = {
+        Vector(0, 0),
+        Vector(1, 0),
+        Vector(0.5, 0.5)
+    };
+    Polygon polygon = Polygon(&points[0], 3, true);
+
     // Render loop
     while (window->isOpen())
     {
         renderer->fillBackground(0x300A24);
 
-        renderer->drawRect(-1.0f, -1.0f, 2.0f, 2.0f, 0x000020);
-        renderer->drawImage(&testUV, 0, 0, 4096, 4096, -0.5f, -0.5f, 1, 1);
-        renderer->drawLine(0, 0, 1, 1, 0xFF0000);
+        polygon.draw(0xFF00FF);
 
         // Debug with ImGui
         ImGui::SetNextWindowPos(ImVec2(0, 0));
