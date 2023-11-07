@@ -20,7 +20,21 @@ void Renderer::drawImage(Image* image, float sx, float sy, float sWidth, float s
         dx,          dy + dHeight, 0, 1, 1, 1,  sx / image->width,               (sy + sHeight) / image->height,
         dx + dWidth, dy + dHeight, 0, 1, 1, 1, (sx + sWidth) / image->width,     (sy + sHeight) / image->height,
         dx + dWidth, dy,           0, 1, 1, 1, (sx + sWidth) / image-> width,    sy / image->height,
-        dx,          dy,           0, 1, 1, 1,  sx / image-> width, 
+        dx,          dy,           0, 1, 1, 1,  sx / image-> width,              sy / image->height
+    };
+
+    m_rectBatch.add(&vertices[0], nullptr, 4, 0);
+}
+
+void Renderer::drawImage(Image* image, float sx, float sy, float sWidth, float sHeight, float* destVertices)
+{
+    m_rectBatch.setImage(image);
+
+    float vertices[] = {
+        destVertices[0], destVertices[1], 0, 1, 1, 1,  sx / image->width,               (sy + sHeight) / image->height,
+        destVertices[2], destVertices[3], 0, 1, 1, 1, (sx + sWidth) / image->width,     (sy + sHeight) / image->height,
+        destVertices[4], destVertices[5], 0, 1, 1, 1, (sx + sWidth) / image-> width,    sy / image->height,
+        destVertices[6], destVertices[7], 0, 1, 1, 1,  sx / image-> width,              sy / image->height
     };
 
     m_rectBatch.add(&vertices[0], nullptr, 4, 0);

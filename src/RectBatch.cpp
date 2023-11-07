@@ -4,6 +4,10 @@ RectBatch::RectBatch()
     : Batch(), m_lastImage(nullptr)
 {
     this->bind();
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
     // Shaders
     const char* VERTEX_SHADER_SOURCE = R"(
         #version 330 core

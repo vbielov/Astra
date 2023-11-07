@@ -6,30 +6,30 @@ Vector::Vector()
 Vector::Vector(float x, float y)
     : x(x), y(y) {}
 
-float Vector::DotProduct(const Vector &other) const
+float Vector::dotProduct(const Vector &other) const
 {
     return this->x * other.x + this->y * other.y;
 }
 
-float Vector::Length() const
+float Vector::length() const
 {
     return sqrt(x * x + y * y);
 }
 
-void Vector::Normilize()
+void Vector::normilize()
 {
-    float length = Length();
-    if(length == 0.0f)
+    float len = length();
+    if(len == 0.0f)
         return;
 
-    x /= length;
-    y /= length;
+    x /= len;
+    y /= len;
 }
 
-Vector Vector::RemoveComponent(Vector &vector, Vector direction)
+Vector Vector::removeComponent(Vector &vector, Vector direction)
 {
-    direction.Normilize();
-    return vector - direction * vector.DotProduct(direction);
+    direction.normilize();
+    return vector - direction * vector.dotProduct(direction);
 }
 
 Vector Vector::operator+(const Vector &other) const

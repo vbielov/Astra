@@ -34,6 +34,9 @@ void Physics::step(float deltaTime)
             if(a == b)
                 break;
 
+            if(!a->isDynamic && !b->isDynamic)
+                continue;
+
             CollisionHit hit = findSATCollision(a, b);
 
             if(hit.hasCollision)
@@ -49,16 +52,40 @@ void Physics::step(float deltaTime)
         {
             col.polygonA->transform.pos.x -= col.hit.normal.x * col.hit.depth;
             col.polygonA->transform.pos.y -= col.hit.normal.y * col.hit.depth;
+            col.polygonA->velocity = Vector::removeComponent(
+                col.polygonA->velocity, 
+                col.hit.normal * col.hit.depth
+            );
         }
             
         if(col.polygonB->isDynamic)
         {
             col.polygonB->transform.pos.x += col.hit.normal.x * col.hit.depth;
             col.polygonB->transform.pos.y += col.hit.normal.y * col.hit.depth;
+            col.polygonB->velocity = Vector::removeComponent(
+                col.polygonB->velocity, 
+                col.hit.normal * col.hit.depth
+            );
         }
     }
 
     // apply dynamics
+    for(Polygon* const& polygon : m_polygons)
+    {
+        if(!polygon->isDynamic)
+            continue;
+
+        const float GRAVITY = 1.0f;
+        polygon->velocity += Vector(0.0f, -1.0f) * GRAVITY * deltaTime;
+
+        polygon->velocity += polygon->force / polygon->mass * deltaTime;
+        polygon->transform.pos += polygon->velocity * deltaTime;
+
+        const float DAMPING_FACTOR = 0.995f;
+        polygon->velocity *= DAMPING_FACTOR;
+
+        polygon->force = Vector(0, 0); // reseting force
+    }
 }
 
 Physics::Interval Physics::getProjection(const Polygon* polygon, Vector axis) const
@@ -67,7 +94,7 @@ Physics::Interval Physics::getProjection(const Polygon* polygon, Vector axis) co
     float max = FLT_MIN;
     for(Vector const& edge : polygon->edges)
     {
-        float dotProduct = axis.DotProduct(polygon->transform.transformVector(edge));
+        float dotProduct = axis.dotProduct(polygon->transform.transformVector(edge));
         min = std::min(min, dotProduct);
         max = std::max(max, dotProduct);
     }
@@ -123,8 +150,8 @@ Physics::CollisionHit Physics::findSATCollision(const Polygon* a, const Polygon*
 
     // Normal & Depth calculation
     // https://www.youtube.com/watch?v=SUyG3aV_vpM
-    float length = hit.normal.Length();
-    hit.normal.Normilize();
+    float length = hit.normal.length();
+    hit.normal.normilize();
 
     if(length != 0.0f)
         hit.depth /= length;
@@ -135,7 +162,7 @@ Physics::CollisionHit Physics::findSATCollision(const Polygon* a, const Polygon*
     Vector centerB = b->getCenter();
     Vector direction = centerB - centerA;
 
-    if(direction.DotProduct(hit.normal) < 0.0f)
+    if(direction.dotProduct(hit.normal) < 0.0f)
         hit.normal = hit.normal * -1.0f;
 
     hit.hasCollision = true;

@@ -10,10 +10,10 @@ struct Vector
     Vector();
     Vector(float x, float y);
     
-    float DotProduct(const Vector& other) const;
-    float Length() const;
-    void Normilize();
-    static Vector RemoveComponent(Vector& vector, Vector direction);
+    float dotProduct(const Vector& other) const;
+    float length() const;
+    void normilize();
+    static Vector removeComponent(Vector& vector, Vector direction);
 
     Vector operator+(const Vector& other) const;
     Vector operator-(const Vector& other) const;

@@ -3,11 +3,13 @@
 #include "Audio.hpp"
 #include "Input.hpp"
 #include "Polygon.hpp"
+#include "Physics.hpp"
+#include "Player.hpp"
 
 int main()
 {
     Window* window = &Window::instance();
-    window->init("Astra", 720, 480, false);
+    window->init("Astra", 720, 480, true);
 
     Input* input = &Input::instance();
     input->init(window->glfwWindow);
@@ -18,19 +20,47 @@ int main()
     AudioManager* audioManager = &AudioManager::instance();
     Audio audio = Audio("res/game_over.wav");
 
-    Vector points[] = {
-        Vector(0, 0),
-        Vector(1, 0),
-        Vector(0.5, 0.5)
+
+    Vector points2[] = {
+        Vector(-1, -1),
+        Vector(-1, -0.8f),
+        Vector(1, -0.8f),
+        Vector(1, -1)
     };
-    Polygon polygon = Polygon(&points[0], 3, true);
+    Polygon groundPoly = Polygon(points2, 4, false);
+
+    Player player = Player(Vector(0, 0));
+
+
+
+    Physics* physics = &Physics::instance();
+    physics->addPolygon(&groundPoly);
+
+    const float PHYSICS_UPDATE_RATE = 120.0f; // Number of physics updates per second
+    const float FIXED_TIME_STEP = 1.0f / PHYSICS_UPDATE_RATE; // Time step between physics updates
+    float accumulatedTime = 0.0f;
 
     // Render loop
     while (window->isOpen())
     {
         renderer->fillBackground(0x300A24);
 
-        polygon.draw(0xFF00FF);
+        player.update(window->deltaTime);
+        
+        // Physics loop with fixed time
+        accumulatedTime += window->deltaTime;
+        while(accumulatedTime >= FIXED_TIME_STEP)
+        {
+            physics->step(FIXED_TIME_STEP);
+            accumulatedTime -= FIXED_TIME_STEP;
+        }
+
+        window->xOffset = -player.m_polygon.transform.pos.x;
+        window->yOffset = -player.m_polygon.transform.pos.y;
+
+        player.m_polygon.draw(0xFF00FF);
+        player.draw();
+        groundPoly.draw(0x00FF00);
 
         // Debug with ImGui
         ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -44,10 +74,10 @@ int main()
         ImGui::End();
 
         // Check input
-        if(input->getKeyDown(GLFW_KEY_SPACE))
-        {
-            audio.play(1.0f); // Play sound
-        }
+        // if(input->getKeyDown(GLFW_KEY_SPACE))
+        // {
+        //     audio.play(1.0f); // Play sound
+        // }
 
         if(input->getKeyDown(GLFW_KEY_ESCAPE))
         {

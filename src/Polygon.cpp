@@ -18,7 +18,8 @@ Vector Transform::transformVector(Vector vector) const
 }
 
 Polygon::Polygon(Vector* points, int count, bool isDynamic)
-    : transform(Vector(0, 0), Vector(1, 1), 0.0f), edges(points, points + count), normals(), isDynamic(isDynamic), velocity(), force(), mass(1)
+    :   transform(Vector(0, 0), Vector(1, 1), 0.0f), edges(points, points + count), normals(), 
+        isDynamic(isDynamic), velocity(), force(), mass(1)
 {
     // Calculate normals
     if(count <= 0 || points == nullptr)
