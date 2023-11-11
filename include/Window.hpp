@@ -7,6 +7,7 @@
 #include "imgui-1.89.8/backends/imgui_impl_opengl3.h"
 
 #include <iostream>
+#include "Vector.hpp"
 
 class Window
 {
@@ -25,6 +26,8 @@ public:
     void init(const char* name, int width, int height, bool vsync = true);
     bool isOpen();
     void endFrame() const;
+
+    Vector mouseToWorldPosition(Vector cursorPos);
 
 private:
     int m_frameCounter;

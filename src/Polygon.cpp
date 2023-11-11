@@ -8,32 +8,22 @@ Transform::Transform(Vector pos, Vector scale, float rotation)
 
 Vector Transform::transformVector(Vector vector) const
 {
-    Vector rotationVector = Vector(
-        vector.x * cos(rotation) - vector.y * sin(rotation),
-        vector.x * sin(rotation) + vector.y * cos(rotation)
-    );
-    rotationVector.x *= scale.x;
-    rotationVector.y *= scale.y;
-    return rotationVector + pos;
+    // Vector rotationVector = Vector(
+    //     vector.x * cos(rotation) - vector.y * sin(rotation),
+    //     vector.x * sin(rotation) + vector.y * cos(rotation)
+    // );
+    // rotationVector.x *= scale.x;
+    // rotationVector.y *= scale.y;
+    return vector + pos;
 }
 
 Polygon::Polygon(Vector* points, int count, bool isDynamic)
-    :   transform(Vector(0, 0), Vector(1, 1), 0.0f), edges(points, points + count), normals(), 
-        isDynamic(isDynamic), velocity(), force(), mass(1)
+    :   transform(Vector(0, 0), Vector(1, 1), 0.0f), edges(points, points + count), 
+        isDynamic(isDynamic), velocity(), force(), mass(1), onCollision(nullptr)
 {
     // Calculate normals
     if(count <= 0 || points == nullptr)
         return;
-
-    normals.reserve(count);
-    for(int i = 0; i < count; i++)
-    {
-        Vector edge1 = edges[i];
-        Vector edge2 = edges[(i + 1) % count];
-
-        Vector dir = edge2 - edge1;
-        normals.emplace_back(dir.y, -dir.x);
-    }
 }
 
 void Polygon::draw(int color)
@@ -43,28 +33,16 @@ void Polygon::draw(int color)
 
     Renderer* renderer = &Renderer::instance();
 
-    std::vector<Vector>::iterator edgeIt;
-
-    // Not very clean, but caching transformVector() should be better.
-    Vector firstVector = transform.transformVector(edges[0]);
-    Vector lastVector = firstVector;
-    for(edgeIt = edges.begin() + 1; edgeIt != edges.end(); ++edgeIt)
+    for(int i = 0; i < edges.size(); i++)
     {
-        Vector transVector = transform.transformVector(*edgeIt);
-        renderer->drawLine(lastVector.x, lastVector.y, transVector.x, transVector.y, color);
-        lastVector = transVector;
+        Vector va = transform.transformVector(edges[i]);
+        Vector vb = transform.transformVector(edges[(i + 1) % edges.size()]);
+        renderer->drawLine(va.x, va.y, vb.x, vb.y, color);
     }
-    
-    renderer->drawLine(lastVector.x, lastVector.y, firstVector.x, firstVector.y, color);
 }
 
-Vector Polygon::getCenter() const
+CollisionHit::CollisionHit(Vector normal, float depth, bool hasCollision)
+    : normal(normal), depth(depth), hasCollision(hasCollision)
 {
-    Vector sum = Vector(0, 0);
-    for(Vector const& edge : edges)
-    {
-        sum += transform.transformVector(edge);
-    }
 
-    return sum / (float)edges.size();
 }

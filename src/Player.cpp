@@ -25,11 +25,11 @@ void Player::update(float deltaTime)
     Input* input = &Input::instance();
 
     int rotationDir = 0;
-    if(input->getKey(GLFW_KEY_A))
+    if(input->isKey(GLFW_KEY_A))
     {
         rotationDir +=  1;
     }
-    if(input->getKey(GLFW_KEY_D))
+    if(input->isKey(GLFW_KEY_D))
     {
         rotationDir += -1;
     }
@@ -40,7 +40,7 @@ void Player::update(float deltaTime)
     const float THRUST_FORCE = 4.0f;
     float theta = m_polygon.transform.rotation;
     Vector thrustDirection = Vector(-sin(theta), cos(theta));
-    if(input->getKey(GLFW_KEY_SPACE))
+    if(input->isKey(GLFW_KEY_SPACE))
     {
         m_polygon.force += thrustDirection * m_polygon.mass * THRUST_FORCE;
     }

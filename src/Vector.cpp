@@ -6,7 +6,7 @@ Vector::Vector()
 Vector::Vector(float x, float y)
     : x(x), y(y) {}
 
-float Vector::dotProduct(const Vector &other) const
+float Vector::dotProduct(const Vector& other) const
 {
     return this->x * other.x + this->y * other.y;
 }

@@ -95,6 +95,19 @@ void Window::endFrame() const
     glfwPollEvents();
 }
 
+Vector Window::mouseToWorldPosition(Vector cursorPos)
+{
+    float a = (float)width / (float)height; // aspect ratio
+    float x = xOffset * scale;
+    float y = yOffset * scale;
+
+    Vector pos = Vector(cursorPos.x / (float)width, 1.0f - cursorPos.y / (float)height) * 2.0f - Vector(1.0f, 1.0f);
+    pos.x /= (scale + x) / a;
+    pos.y /= scale + y; 
+
+    return pos;
+}
+
 void Window::framebufferSizeCallback(GLFWwindow *window, int width, int height)
 {
     glViewport(0, 0, width, height);

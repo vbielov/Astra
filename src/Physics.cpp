@@ -42,9 +42,14 @@ void Physics::step(float deltaTime)
             if(hit.hasCollision)
             {
                 collisions.emplace_back(a, b, hit);
+                if(a->onCollision != nullptr) 
+                    a->onCollision(hit, 0);
+                if(b->onCollision != nullptr) 
+                    b->onCollision(hit, 0);
             }
         }
     }
+
     // resolve collisions
     for(Collision const& col : collisions)
     {
@@ -54,7 +59,7 @@ void Physics::step(float deltaTime)
             col.polygonA->transform.pos.y -= col.hit.normal.y * col.hit.depth;
             col.polygonA->velocity = Vector::removeComponent(
                 col.polygonA->velocity, 
-                col.hit.normal * col.hit.depth
+                col.hit.normal * -col.hit.depth
             );
         }
             
@@ -76,7 +81,7 @@ void Physics::step(float deltaTime)
             continue;
 
         const float GRAVITY = 1.0f;
-        polygon->velocity += Vector(0.0f, -1.0f) * GRAVITY * deltaTime;
+        // polygon->velocity += Vector(0.0f, -1.0f) * GRAVITY * deltaTime;
 
         polygon->velocity += polygon->force / polygon->mass * deltaTime;
         polygon->transform.pos += polygon->velocity * deltaTime;
@@ -88,10 +93,12 @@ void Physics::step(float deltaTime)
     }
 }
 
-Physics::Interval Physics::getProjection(const Polygon* polygon, Vector axis) const
+Physics::Interval Physics::getProjection(const Polygon* polygon, const Vector& axis) const
 {
-    float min = FLT_MAX;
-    float max = FLT_MIN;
+    // Avoid using FLT_MAX, FLT_MIN
+    float min = axis.dotProduct(polygon->transform.transformVector(polygon->edges[0]));
+    float max = axis.dotProduct(polygon->transform.transformVector(polygon->edges[0]));
+
     for(Vector const& edge : polygon->edges)
     {
         float dotProduct = axis.dotProduct(polygon->transform.transformVector(edge));
@@ -107,63 +114,100 @@ bool Physics::overlap(const Interval& projA, const Interval& projB) const
             projA.max >= projB.min;
 }
 
-Physics::CollisionHit Physics::findSATCollision(const Polygon* a, const Polygon* b)
+Vector Physics::getCenter(const Polygon* polygon) const
+{     
+    Vector sum = Vector(0, 0);
+    for(Vector const& edge : polygon->edges)
+    {
+        sum += edge;
+    }
+
+    return sum / (float)polygon->edges.size();
+}
+
+void Physics::calculateNormals(std::vector<Vector>* dst, const Polygon* polygon) const
 {
-    CollisionHit hit = CollisionHit(Vector(0, 0), FLT_MAX, false);
-
-    // Getting axis
-    const std::vector<Vector>* axis1 = &(a->normals);
-    const std::vector<Vector>* axis2 = &(b->normals);
-
-    // Projecting on axis
-    for(Vector const& axis : *axis1)
+    for(int i = 0; i < polygon->edges.size(); ++i)
     {
-        Interval p1 = getProjection(a, axis);
-        Interval p2 = getProjection(b, axis);
+        // find edge normal, not very efficient to be honest.
+        Vector va = polygon->transform.transformVector(polygon->edges[i]);
+        Vector vb = polygon->transform.transformVector(polygon->edges[(i + 1) % polygon->edges.size()]);
+        Vector edge = vb - va;
+        dst->emplace_back(-edge.y, edge.x);
+    } 
+}
 
-        if(overlap(p1, p2) == false)
-            return hit;
-
-        float axisDepth = std::min(p2.max - p1.min, p1.max - p2.min);
-        if(axisDepth < hit.depth)
-        {
-            hit.depth = axisDepth;
-            hit.normal = axis;
-        }
-    }
-
-    for(Vector const& axis : *axis2)
-    {
-        Interval p1 = getProjection(a, axis);
-        Interval p2 = getProjection(b, axis);
-
-        if(overlap(p1, p2) == false)
-            return hit;
-
-        float axisDepth = std::min(p2.max - p1.min, p1.max - p2.min);
-        if(axisDepth < hit.depth)
-        {
-            hit.depth = axisDepth;
-            hit.normal = axis;
-        }
-    }
-
+CollisionHit Physics::findSATCollision(const Polygon* a, const Polygon* b)
+{
+    
     // Normal & Depth calculation
     // https://www.youtube.com/watch?v=SUyG3aV_vpM
+
+    // Avoid using FLT_MAX, FLT_MIN
+    CollisionHit hit = CollisionHit(Vector(0, 0), 0, false);
+
+    std::vector<Vector> normalsA;
+    calculateNormals(&normalsA, a);
+
+    std::vector<Vector> normalsB;
+    calculateNormals(&normalsB, b);
+
+    for(Vector const& axis : normalsA)
+    {
+        Interval projA = getProjection(a, axis);
+        Interval projB = getProjection(b, axis);
+
+        if(overlap(projA, projB) == false)
+        {
+            return hit;
+        }
+
+        float axisDepth = std::min(projB.max - projA.min, projA.max - projB.min);
+        if(axisDepth < hit.depth || hit.depth == 0)
+        {
+            hit.depth = axisDepth;
+            hit.normal = axis;
+        }
+    }
+
+    for(Vector const& axis : normalsB)
+    {
+        Interval projA = getProjection(a, axis);
+        Interval projB = getProjection(b, axis);
+
+        if(overlap(projA, projB) == false)
+        {
+            return hit;
+        }
+
+        float axisDepth = std::min(projB.max - projA.min, projA.max - projB.min);
+        if(axisDepth < hit.depth || hit.depth == 0)
+        {
+            hit.depth = axisDepth;
+            hit.normal = axis;
+        }
+    }
+
     float length = hit.normal.length();
     hit.normal.normilize();
 
     if(length != 0.0f)
+    {
         hit.depth /= length;
+    }
     else
+    {
         hit.depth = 0.0f;
+    }
 
-    Vector centerA = a->getCenter();
-    Vector centerB = b->getCenter();
+    Vector centerA = a->transform.transformVector(getCenter(a));
+    Vector centerB = b->transform.transformVector(getCenter(b));
     Vector direction = centerB - centerA;
 
     if(direction.dotProduct(hit.normal) < 0.0f)
+    {
         hit.normal = hit.normal * -1.0f;
+    }
 
     hit.hasCollision = true;
     return hit;
@@ -171,12 +215,6 @@ Physics::CollisionHit Physics::findSATCollision(const Polygon* a, const Polygon*
 
 Physics::Interval::Interval(float min, float max)
     : min(min), max(max)
-{
-
-}
-
-Physics::CollisionHit::CollisionHit(Vector normal, float depth, bool hasCollision)
-    : normal(normal), depth(depth), hasCollision(hasCollision)
 {
 
 }

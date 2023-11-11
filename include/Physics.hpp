@@ -12,16 +12,7 @@ private:
 
         Interval(float min, float max);
     };
-
-    struct CollisionHit
-    {
-        Vector normal;
-        float depth;
-        bool hasCollision;
-
-        CollisionHit(Vector normal, float depth, bool hasCollision);
-    };
-
+    
     struct Collision
     {
         Polygon* polygonA;
@@ -41,8 +32,9 @@ public:
 private:
     std::vector<Polygon*> m_polygons;
 
-    Interval getProjection(const Polygon* polygon, Vector axis) const;
+    Interval getProjection(const Polygon* polygon, const Vector& axis) const;
     bool overlap(const Interval& projA, const Interval& projB) const;
+    Vector getCenter(const Polygon* polygon) const;
+    void calculateNormals(std::vector<Vector>* dst, const Polygon* polygon) const;
     CollisionHit findSATCollision(const Polygon* a, const Polygon* b);
-
 };
