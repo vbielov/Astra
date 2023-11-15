@@ -14,6 +14,7 @@ struct Vector
     float length() const;
     void normilize();
     static Vector removeComponent(Vector& vector, Vector direction);
+    Vector lerp(const Vector& other, float t) const;
 
     Vector operator+(const Vector& other) const;
     Vector operator-(const Vector& other) const;

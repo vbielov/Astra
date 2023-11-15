@@ -8,8 +8,8 @@ Terrain::Terrain()
     const int SEED = 49;
     PerlinNoise pn(SEED);
 
-    const int CHUNK_SIZE = 16;
-    const int CHUNK_DETAIL = 1;
+    const int CHUNK_SIZE = 8;
+    const float CHUNK_DETAIL = 0.5f;
     const float AMPLITUDE = 1.0f;
     const float FREQUENCY = 0.20f;
     const float SEED_Y = 1245.2f;
@@ -38,7 +38,7 @@ Terrain::Terrain()
             *(pointsIt + 1),
             *pointsIt,
         };
-        polygons.emplace_back(points, 4, false);
+        polygons.emplace_back(points, 4, true);
     }
 
     Physics* physics = &Physics::instance();

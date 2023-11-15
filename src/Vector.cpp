@@ -32,6 +32,14 @@ Vector Vector::removeComponent(Vector &vector, Vector direction)
     return vector - direction * vector.dotProduct(direction);
 }
 
+Vector Vector::lerp(const Vector &other, float t) const
+{
+    return Vector(
+        this->x + (other.x - this->x) * t,
+        this->y + (other.y - this->y) * t
+    );
+}
+
 Vector Vector::operator+(const Vector &other) const
 {
     return Vector(this->x + other.x, this->y + other.y);

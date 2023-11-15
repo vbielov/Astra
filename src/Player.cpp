@@ -37,12 +37,12 @@ void Player::update(float deltaTime)
     const float ROTATION_SPEED = 1.5f;
     m_polygon.transform.rotation += rotationDir * ROTATION_SPEED * deltaTime;
 
-    const float THRUST_FORCE = 4.0f;
+    const float THRUST_FORCE = 60.0f;
     float theta = m_polygon.transform.rotation;
     Vector thrustDirection = Vector(-sin(theta), cos(theta));
     if(input->isKey(GLFW_KEY_SPACE))
     {
-        m_polygon.force += thrustDirection * m_polygon.mass * THRUST_FORCE;
+        m_polygon.force += thrustDirection * m_polygon.mass * THRUST_FORCE * deltaTime;
     }
 }
 

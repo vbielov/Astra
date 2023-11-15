@@ -5,13 +5,13 @@
 #include "Polygon.hpp"
 #include "Physics.hpp"
 #include "Player.hpp"
-#include "Terrain.hpp"
+#include "Planet.hpp"
 #include "TestPolygon.hpp"
 
 int main()
 {
     Window* window = &Window::instance();
-    window->init("Astra", 720, 480, true);
+    window->init("Astra", 720, 480, false);
 
     Input* input = &Input::instance();
     input->init(window->glfwWindow);
@@ -30,16 +30,11 @@ int main()
         Vector(1, -1)
     };
     Polygon groundPoly = Polygon(points2, 4, false);
-
-    // Player player = Player(Vector(0, 0));
-    // Terrain terrain = Terrain();
-    TestPolygon test = TestPolygon();
-    TestPolygon test2 = TestPolygon();
+    Planet planet = Planet(100);
+    Player player = Player(Vector(0, 0));
 
     Physics* physics = &Physics::instance();
     physics->addPolygon(&groundPoly);
-    physics->addPolygon(&test.polygon);
-    physics->addPolygon(&test2.polygon);
 
     const float PHYSICS_UPDATE_RATE = 120.0f; // Number of physics updates per second
     const float FIXED_TIME_STEP = 1.0f / PHYSICS_UPDATE_RATE; // Time step between physics updates
@@ -50,12 +45,9 @@ int main()
     {
         renderer->fillBackground(0x300A24);
 
-        // player.update(window->deltaTime);
+        player.update(window->deltaTime);
         
         // Physics loop with fixed time
-
-        test.update(window->deltaTime);
-        test2.update(window->deltaTime);
 
         accumulatedTime += window->deltaTime;
         while(accumulatedTime >= FIXED_TIME_STEP)
@@ -64,15 +56,12 @@ int main()
             accumulatedTime -= FIXED_TIME_STEP;
         }
 
-        // window->xOffset = -player.m_polygon.transform.pos.x;
-        // window->yOffset = -player.m_polygon.transform.pos.y;
+        window->xOffset = -player.m_polygon.transform.pos.x;
+        window->yOffset = -player.m_polygon.transform.pos.y;
 
-        // player.m_polygon.draw(0xFF00FF);
-        // player.draw();
-        // terrain.draw();
-
-        test.draw(0xFFFFFF);
-        test2.draw(0xFFFFFF);
+        planet.draw();
+        player.m_polygon.draw(0xFF00FF);
+        player.draw();
 
         groundPoly.draw(0x00FF00);
 

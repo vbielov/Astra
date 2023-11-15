@@ -55,33 +55,27 @@ void Physics::step(float deltaTime)
     {
         if(col.polygonA->isDynamic)
         {
-            col.polygonA->transform.pos.x -= col.hit.normal.x * col.hit.depth;
-            col.polygonA->transform.pos.y -= col.hit.normal.y * col.hit.depth;
-            col.polygonA->velocity = Vector::removeComponent(
-                col.polygonA->velocity, 
-                col.hit.normal * -col.hit.depth
-            );
+            col.polygonA->transform.pos.x -= col.hit.normal.x * col.hit.depth / 2.0f;
+            col.polygonA->transform.pos.y -= col.hit.normal.y * col.hit.depth / 2.0f;
         }
             
         if(col.polygonB->isDynamic)
         {
-            col.polygonB->transform.pos.x += col.hit.normal.x * col.hit.depth;
-            col.polygonB->transform.pos.y += col.hit.normal.y * col.hit.depth;
-            col.polygonB->velocity = Vector::removeComponent(
-                col.polygonB->velocity, 
-                col.hit.normal * col.hit.depth
-            );
+            col.polygonB->transform.pos.x += col.hit.normal.x * col.hit.depth / 2.0f;
+            col.polygonB->transform.pos.y += col.hit.normal.y * col.hit.depth / 2.0f;
         }
+
+        resolveCollision(col.polygonA, col.polygonB, col.hit);
     }
 
     // apply dynamics
     for(Polygon* const& polygon : m_polygons)
     {
         if(!polygon->isDynamic)
+        {
+            polygon->velocity = Vector(0, 0);
             continue;
-
-        const float GRAVITY = 1.0f;
-        // polygon->velocity += Vector(0.0f, -1.0f) * GRAVITY * deltaTime;
+        }
 
         polygon->velocity += polygon->force / polygon->mass * deltaTime;
         polygon->transform.pos += polygon->velocity * deltaTime;
@@ -139,12 +133,15 @@ void Physics::calculateNormals(std::vector<Vector>* dst, const Polygon* polygon)
 
 CollisionHit Physics::findSATCollision(const Polygon* a, const Polygon* b)
 {
-    
     // Normal & Depth calculation
     // https://www.youtube.com/watch?v=SUyG3aV_vpM
 
     // Avoid using FLT_MAX, FLT_MIN
     CollisionHit hit = CollisionHit(Vector(0, 0), 0, false);
+
+    // AABB collision detection
+    if(isInBounds(a, b) == false)
+        return hit;
 
     std::vector<Vector> normalsA;
     calculateNormals(&normalsA, a);
@@ -200,6 +197,10 @@ CollisionHit Physics::findSATCollision(const Polygon* a, const Polygon* b)
         hit.depth = 0.0f;
     }
 
+    if(hit.depth <= 0.0001f)
+        return hit;
+
+
     Vector centerA = a->transform.transformVector(getCenter(a));
     Vector centerB = b->transform.transformVector(getCenter(b));
     Vector direction = centerB - centerA;
@@ -211,6 +212,51 @@ CollisionHit Physics::findSATCollision(const Polygon* a, const Polygon* b)
 
     hit.hasCollision = true;
     return hit;
+}
+
+void Physics::resolveCollision(Polygon* a, Polygon* b, const CollisionHit& hit) const
+{
+    Vector relativeVelocity = b->velocity - a->velocity;
+
+    float e = std::min(a->restituion, b->restituion);
+    float j = -(1.0f + e) * relativeVelocity.dotProduct(hit.normal);
+    float massA = a->isDynamic ? a->mass : 100000.0f;
+    float massB = b->isDynamic ? b->mass : 100000.0f;
+    j /= (1.0f / massA) + (1.0f / massB);
+
+    a->velocity -= hit.normal * (j / massA);
+    b->velocity += hit.normal * (j / massB);
+}
+
+bool Physics::isInBounds(const Polygon* a, const Polygon* b) const
+{
+    // Is it even cheaper?
+    Vector minA = a->edges[0]; 
+    Vector maxA = a->edges[0];
+    for(Vector const& edge : a->edges)
+    {
+        Vector vector = a->transform.transformVector(edge);
+        if(vector.x < minA.x)  minA.x = vector.x;
+        if(vector.y < minA.y)  minA.y = vector.y;
+        if(vector.x > maxA.x)  maxA.x = vector.x;
+        if(vector.y > maxA.y)  maxA.y = vector.y;
+    }
+
+    Vector minB = b->edges[0]; 
+    Vector maxB = b->edges[0];
+    for(Vector const& edge : b->edges)
+    {
+        Vector vector = b->transform.transformVector(edge);
+        if(vector.x < minB.x)  minB.x = vector.x;
+        if(vector.y < minB.y)  minB.y = vector.y;
+        if(vector.x > maxB.x)  maxB.x = vector.x;
+        if(vector.y > maxB.y)  maxB.y = vector.y;
+    }
+
+    return  minA.x <= maxB.x &&
+            maxA.x >= minB.x &&
+            minA.y <= maxB.y &&
+            maxA.y >= minB.y;
 }
 
 Physics::Interval::Interval(float min, float max)

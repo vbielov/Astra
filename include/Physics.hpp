@@ -37,4 +37,6 @@ private:
     Vector getCenter(const Polygon* polygon) const;
     void calculateNormals(std::vector<Vector>* dst, const Polygon* polygon) const;
     CollisionHit findSATCollision(const Polygon* a, const Polygon* b);
+    void resolveCollision(Polygon* a, Polygon* b, const CollisionHit& hit) const;
+    bool isInBounds(const Polygon* a, const Polygon* b) const;
 };

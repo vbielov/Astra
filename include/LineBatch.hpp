@@ -16,6 +16,8 @@ public:
     void render();
     void add(const float* vertices, const unsigned int* indices, int vertexCount, int indexCount);
     bool isEnoughRoom(unsigned int numVertices, unsigned int numIndices) const;
-private:
 
+private:
+    std::vector<float> m_vertices;
+    std::vector<unsigned int> m_indices;
 };

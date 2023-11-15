@@ -8,22 +8,23 @@ Transform::Transform(Vector pos, Vector scale, float rotation)
 
 Vector Transform::transformVector(Vector vector) const
 {
-    // Vector rotationVector = Vector(
-    //     vector.x * cos(rotation) - vector.y * sin(rotation),
-    //     vector.x * sin(rotation) + vector.y * cos(rotation)
-    // );
-    // rotationVector.x *= scale.x;
-    // rotationVector.y *= scale.y;
-    return vector + pos;
+    Vector rotationVector = Vector(
+        vector.x * cos(rotation) - vector.y * sin(rotation),
+        vector.x * sin(rotation) + vector.y * cos(rotation)
+    );
+    rotationVector.x *= scale.x;
+    rotationVector.y *= scale.y;
+    return rotationVector + pos;
 }
 
 Polygon::Polygon(Vector* points, int count, bool isDynamic)
     :   transform(Vector(0, 0), Vector(1, 1), 0.0f), edges(points, points + count), 
-        isDynamic(isDynamic), velocity(), force(), mass(1), onCollision(nullptr)
+        isDynamic(isDynamic), velocity(), force(), mass(1), onCollision(nullptr), restituion(1.0f)
 {
-    // Calculate normals
-    if(count <= 0 || points == nullptr)
-        return;
+    if(isDynamic == false)
+    {
+        restituion = 0.0f;
+    }
 }
 
 void Polygon::draw(int color)

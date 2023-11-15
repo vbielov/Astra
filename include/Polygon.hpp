@@ -35,6 +35,8 @@ public:
     Vector force;
     float mass;
 
+    float restituion; // ?
+
     std::function<void(CollisionHit&, float)> onCollision;
 
     Polygon(Vector* points, int count, bool isDynamic);
