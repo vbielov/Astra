@@ -23,7 +23,17 @@ void Renderer::drawImage(Image* image, float sx, float sy, float sWidth, float s
         dx,          dy,           0, 1, 1, 1,  sx / image-> width,              sy / image->height
     };
 
-    m_rectBatch.add(&vertices[0], nullptr, 4, 0);
+    unsigned int vertexCount = m_rectBatch.getVertexCount();
+    unsigned int indices[] = {
+        0 + vertexCount,
+        1 + vertexCount,
+        2 + vertexCount,
+        2 + vertexCount,
+        3 + vertexCount,
+        0 + vertexCount
+    };
+
+    m_rectBatch.add(&vertices[0], &indices[0], 4, 6);
 }
 
 void Renderer::drawImage(Image* image, float sx, float sy, float sWidth, float sHeight, float* destVertices)
@@ -37,7 +47,17 @@ void Renderer::drawImage(Image* image, float sx, float sy, float sWidth, float s
         destVertices[6], destVertices[7], 0, 1, 1, 1,  sx / image-> width,              sy / image->height
     };
 
-    m_rectBatch.add(&vertices[0], nullptr, 4, 0);
+    unsigned int vertexCount = m_rectBatch.getVertexCount();
+    unsigned int indices[] = {
+        0 + vertexCount,
+        1 + vertexCount,
+        2 + vertexCount,
+        2 + vertexCount,
+        3 + vertexCount,
+        0 + vertexCount
+    };
+
+    m_rectBatch.add(&vertices[0], &indices[0], 4, 6);
 }
 
 void Renderer::drawRect(float x, float y, float width, float height, int color)
@@ -51,8 +71,18 @@ void Renderer::drawRect(float x, float y, float width, float height, int color)
         x + width,  y,          0.0f, rgb[0], rgb[1], rgb[2], -1, -1,
         x,          y,          0.0f, rgb[0], rgb[1], rgb[2], -1, -1
     };
+
+    unsigned int vertexCount = m_rectBatch.getVertexCount();
+    unsigned int indices[] = {
+        0 + vertexCount,
+        1 + vertexCount,
+        2 + vertexCount,
+        2 + vertexCount,
+        3 + vertexCount,
+        0 + vertexCount
+    };
     
-    m_rectBatch.add(&vertices[0], nullptr, 4, 0);
+    m_rectBatch.add(&vertices[0], &indices[0], 4, 6);
 }
 
 void Renderer::drawLine(float fromX, float fromY, float toX, float toY, int color)
@@ -66,13 +96,21 @@ void Renderer::drawLine(float fromX, float fromY, float toX, float toY, int colo
     };
 
     unsigned int usedIndices = m_lineBatch.getIndexCount();
-
     unsigned int indices[] = {
         usedIndices + 0,
         usedIndices + 1
     };
     
     m_lineBatch.add(&vertices[0], &indices[0], 2, 2);
+}
+
+void Renderer::drawMesh(const float* vertices, const unsigned int* indices, int vertexCount, int indexCount, const Image* image)
+{
+    if(image != nullptr)
+    {
+        m_rectBatch.setImage(image);
+    }
+    m_rectBatch.add(&vertices[0], &indices[0], vertexCount, indexCount);
 }
 
 void Renderer::fillBackground(int color)

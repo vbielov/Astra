@@ -16,6 +16,7 @@ public:
     virtual void render() = 0;
 
     int getIndexCount() const;
+    int getVertexCount() const;
     
 protected:
     unsigned int m_maxVertices;

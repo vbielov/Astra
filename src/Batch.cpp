@@ -93,3 +93,7 @@ int Batch::getIndexCount() const
     return m_usedIndices;
 }
 
+int Batch::getVertexCount() const
+{
+    return m_usedVertices;
+}

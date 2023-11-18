@@ -1,7 +1,7 @@
 #include "RectBatch.hpp"
 
 RectBatch::RectBatch() 
-    : Batch(), m_lastImage(nullptr)
+    : Batch(), m_lastImage(nullptr), m_vertices(), m_indices()
 {
     this->bind();
 
@@ -66,23 +66,7 @@ RectBatch::RectBatch()
 
     // Buffers
     glBufferData(GL_ARRAY_BUFFER, m_maxVertices * sizeof(RectVertex), nullptr, GL_DYNAMIC_DRAW);
-
-    unsigned int indices[m_maxIndices];
-    for(int i = 0, v = 0; (i + 5) < m_maxIndices; i += 6)
-    {
-        // 0 1 2 | 2 3 0
-        indices[i + 0] = 0 + v;
-        indices[i + 1] = 1 + v;
-        indices[i + 2] = 2 + v;
-
-        indices[i + 3] = 2 + v;
-        indices[i + 4] = 3 + v;
-        indices[i + 5] = 0 + v;
-
-        v += 4;
-    }
-
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_maxIndices * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_maxIndices * sizeof(unsigned int), nullptr, GL_DYNAMIC_DRAW);
 
     // pos
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(RectVertex), (void*)0);
@@ -105,14 +89,23 @@ void RectBatch::render()
     }
 
     this->bind();
+    
+    glBufferSubData(GL_ARRAY_BUFFER, 0, m_usedVertices * sizeof(RectVertex), m_vertices.data());
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, m_usedIndices * sizeof(unsigned int), m_indices.data());
+
     sendMVPUniform();
     sendSampler2DUniform("u_Texture", 0);
-    glDrawElements(GL_TRIANGLES, m_usedVertices / 4 * 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, m_usedIndices, GL_UNSIGNED_INT, 0);
+
+    m_vertices.clear();
+    m_indices.clear();
+
     m_usedVertices = 0;
+    m_usedIndices = 0;
+    
     this->unBind();
 }
 
-// indices and indexCount doesn't matter, because it is pre-generated
 void RectBatch::add(const float* vertices, const unsigned int* indices, int vertexCount, int indexCount)
 {
     if(isEnoughRoom(vertexCount, 0) == false)
@@ -120,10 +113,17 @@ void RectBatch::add(const float* vertices, const unsigned int* indices, int vert
         render();
     }
 
-    this->bind();
-    glBufferSubData(GL_ARRAY_BUFFER, m_usedVertices * sizeof(RectVertex), vertexCount * sizeof(RectVertex), vertices);
+    size_t existingSize = m_vertices.size();
+    const int floatCountOfVertex = sizeof(RectVertex) / sizeof(float);
+    m_vertices.resize(existingSize + vertexCount * floatCountOfVertex);
+    std::copy(vertices, vertices + vertexCount * floatCountOfVertex, m_vertices.begin() + existingSize);
+
+    existingSize = m_indices.size();
+    m_indices.resize(existingSize + indexCount);
+    std::copy(indices, indices + indexCount, m_indices.begin() + existingSize);
+
     m_usedVertices += vertexCount;
-    this->unBind();
+    m_usedIndices += indexCount;
 }
 
 bool RectBatch::isEnoughRoom(unsigned int numVertices, unsigned int numIndices) const
@@ -131,14 +131,14 @@ bool RectBatch::isEnoughRoom(unsigned int numVertices, unsigned int numIndices) 
     return (m_usedVertices + numVertices) <= m_maxVertices;
 }
 
-void RectBatch::setImage(Image* image)
+void RectBatch::setImage(const Image* image)
 {
     if(m_lastImage == image || image == nullptr)
         return;
 
     render();
     image->bind(0);
-    m_lastImage = image;
+    m_lastImage = (Image*)image;
 }
 
 void RectBatch::sendSampler2DUniform(const char* uniformName, int unit) const

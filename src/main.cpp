@@ -22,20 +22,10 @@ int main()
     AudioManager* audioManager = &AudioManager::instance();
     Audio audio = Audio("res/game_over.wav");
 
-
-    Vector points2[] = {
-        Vector(-1, -1),
-        Vector(-1, -0.8f),
-        Vector(1, -0.8f),
-        Vector(1, -1)
-    };
-    Polygon groundPoly = Polygon(points2, 4, false);
     Planet planet = Planet(100);
     Player player = Player(Vector(0, 0));
 
     Physics* physics = &Physics::instance();
-    physics->addPolygon(&groundPoly);
-
     const float PHYSICS_UPDATE_RATE = 120.0f; // Number of physics updates per second
     const float FIXED_TIME_STEP = 1.0f / PHYSICS_UPDATE_RATE; // Time step between physics updates
     float accumulatedTime = 0.0f;
@@ -43,12 +33,11 @@ int main()
     // Render loop
     while (window->isOpen())
     {
-        renderer->fillBackground(0x300A24);
+        renderer->fillBackground(0x050505);
 
         player.update(window->deltaTime);
         
         // Physics loop with fixed time
-
         accumulatedTime += window->deltaTime;
         while(accumulatedTime >= FIXED_TIME_STEP)
         {
@@ -60,10 +49,7 @@ int main()
         window->yOffset = -player.m_polygon.transform.pos.y;
 
         planet.draw();
-        player.m_polygon.draw(0xFF00FF);
         player.draw();
-
-        groundPoly.draw(0x00FF00);
 
         // Debug with ImGui
         ImGui::SetNextWindowPos(ImVec2(0, 0));

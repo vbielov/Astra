@@ -69,26 +69,30 @@ void LineBatch::render()
     }
 
     this->bind();
-    // NOTE: Yes this is actually faster...
+
     glBufferSubData(GL_ARRAY_BUFFER, 0, m_usedVertices * sizeof(LineVertex), m_vertices.data());
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, m_usedIndices * sizeof(unsigned int), m_indices.data());
+
     m_vertices.clear();
     m_indices.clear();
+
     sendMVPUniform();
     glDrawElements(GL_LINES, m_usedIndices, GL_UNSIGNED_INT, 0);
+
     m_usedVertices = 0;
     m_usedIndices = 0;
+    
     this->unBind();
 }
 
 void LineBatch::add(const float* vertices, const unsigned int* indices, int vertexCount, int indexCount)
 {
-    // if(isEnoughRoom(vertexCount, 0) == false)
-    // {
-    //     render();
-    // }
+    if(isEnoughRoom(vertexCount, 0) == false)
+    {
+        render();
+    }
 
-    size_t existingSize = m_vertices.size();
+    auto existingSize = m_vertices.size();
     const int floatCountOfVertex = sizeof(LineVertex) / sizeof(float);
     m_vertices.resize(existingSize + vertexCount * floatCountOfVertex);
     std::copy(vertices, vertices + vertexCount * floatCountOfVertex, m_vertices.begin() + existingSize);
@@ -97,13 +101,8 @@ void LineBatch::add(const float* vertices, const unsigned int* indices, int vert
     m_indices.resize(existingSize + indexCount);
     std::copy(indices, indices + indexCount, m_indices.begin() + existingSize);
 
-    // this->bind();
-    // glBufferSubData(GL_ARRAY_BUFFER, m_usedVertices * sizeof(LineVertex), vertexCount * sizeof(LineVertex), vertices);
-    // glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, m_usedIndices * sizeof(unsigned int), indexCount * sizeof(unsigned int), indices);
-
     m_usedVertices += vertexCount;
     m_usedIndices += indexCount;
-    // this->unBind();
 }
 
 bool LineBatch::isEnoughRoom(unsigned int numVertices, unsigned int numIndices) const

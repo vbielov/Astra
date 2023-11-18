@@ -140,8 +140,10 @@ CollisionHit Physics::findSATCollision(const Polygon* a, const Polygon* b)
     CollisionHit hit = CollisionHit(Vector(0, 0), 0, false);
 
     // AABB collision detection
-    if(isInBounds(a, b) == false)
-        return hit;
+
+    // Actually slower then not checking it at all.
+    // if(isInBounds(a, b) == false)
+    //     return hit;
 
     std::vector<Vector> normalsA;
     calculateNormals(&normalsA, a);

@@ -11,6 +11,7 @@ public:
     void drawImage(Image* image, float sx, float sy, float sWidth, float sHeight, float* destVertices);
     void drawRect(float x, float y, float width, float height, int color);
     void drawLine(float fromX, float fromY, float toX, float toY, int color);
+    void drawMesh(const float* vertices, const unsigned int* indices, int vertexCount, int indexCount, const Image* image);
 
     void fillBackground(int color);
 
