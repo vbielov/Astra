@@ -1,6 +1,7 @@
 #pragma once
 #include "RectBatch.hpp"
 #include "LineBatch.hpp"
+#include "Font.hpp"
 
 class Renderer
 {
@@ -12,7 +13,7 @@ public:
     void drawRect(float x, float y, float width, float height, int color);
     void drawLine(float fromX, float fromY, float toX, float toY, int color);
     void drawMesh(const float* vertices, const unsigned int* indices, int vertexCount, int indexCount, const Image* image);
-
+    void drawText(const char* text, const Font* font, float x, float y, float fontSize, int color);
     void fillBackground(int color);
 
     void render();
@@ -24,5 +25,4 @@ private:
     LineBatch m_lineBatch;
 
     Renderer();
-    
 };

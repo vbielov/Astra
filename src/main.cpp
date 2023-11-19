@@ -11,7 +11,7 @@
 int main()
 {
     Window* window = &Window::instance();
-    window->init("Astra", 720, 480, false);
+    window->init("Astra", 720, 480, true);
 
     Input* input = &Input::instance();
     input->init(window->glfwWindow);
@@ -29,6 +29,8 @@ int main()
     const float PHYSICS_UPDATE_RATE = 120.0f; // Number of physics updates per second
     const float FIXED_TIME_STEP = 1.0f / PHYSICS_UPDATE_RATE; // Time step between physics updates
     float accumulatedTime = 0.0f;
+
+    Font font = Font("res/font24x24.png", 24);
 
     // Render loop
     while (window->isOpen())
@@ -50,6 +52,7 @@ int main()
 
         planet.draw();
         player.draw();
+        renderer->drawText("Hi World! \nhow are you?", &font, 0, 0, 0.1f, 0xFFA0FF);
 
         // Debug with ImGui
         ImGui::SetNextWindowPos(ImVec2(0, 0));

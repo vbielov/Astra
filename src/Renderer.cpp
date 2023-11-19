@@ -113,6 +113,75 @@ void Renderer::drawMesh(const float* vertices, const unsigned int* indices, int 
     m_rectBatch.add(&vertices[0], &indices[0], vertexCount, indexCount);
 }
 
+void Renderer::drawText(const char* text, const Font* font, float x, float y, float fontSize, int color)
+{
+    m_rectBatch.setImage((Image*)font);
+
+    float rgb[3];
+    hexToRGB(color, rgb);
+
+    int vertexCount = m_rectBatch.getVertexCount();
+
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
+
+    int charCounter = 0;
+    float xOffset = 0;
+    float yOffset = 0;
+
+    while(text[charCounter] != '\0') 
+    {
+        int letterIndex = (int)text[charCounter++];
+        
+        int cellSize = font->getCellSize();
+        float textureSize = textureSize;
+        int cellGridWidth = std::floor(textureSize / cellSize);
+
+        Vector cellPos = Vector(
+            (letterIndex % cellGridWidth) * cellSize, 
+            std::floor((float)letterIndex / (float)cellGridWidth) * (float)cellSize
+        );
+        cellPos.y += cellSize;
+        cellPos.y = font->height - cellPos.y;
+        cellPos /= (float)textureSize;
+
+        float vertexQuad[] = {
+            x + xOffset,            y + yOffset + fontSize, 0.0f, rgb[0], rgb[1], rgb[2], cellPos.x,                              cellPos.y + cellSize / textureSize,
+            x + xOffset + fontSize, y + yOffset + fontSize, 0.0f, rgb[0], rgb[1], rgb[2], cellPos.x + cellSize / textureSize, cellPos.y + cellSize / textureSize,
+            x + xOffset + fontSize, y + yOffset,            0.0f, rgb[0], rgb[1], rgb[2], cellPos.x + cellSize / textureSize, cellPos.y,
+            x + xOffset,            y + yOffset,            0.0f, rgb[0], rgb[1], rgb[2], cellPos.x,                              cellPos.y
+        };
+
+        unsigned int letterVertexCount = vertices.size() / 8;
+        unsigned int indexQuad[] = {
+            0 + vertexCount + letterVertexCount,
+            1 + vertexCount + letterVertexCount,
+            2 + vertexCount + letterVertexCount,
+            2 + vertexCount + letterVertexCount,
+            3 + vertexCount + letterVertexCount,
+            0 + vertexCount + letterVertexCount
+        };
+
+        size_t existingSize = vertices.size();
+        vertices.resize(existingSize + 32);
+        std::copy(&vertexQuad[0], &vertexQuad[0] + 32, vertices.begin() + existingSize);
+
+        existingSize = indices.size();
+        indices.resize(existingSize + 6);
+        std::copy(&indexQuad[0], &indexQuad[0] + 6, indices.begin() + existingSize);
+
+        if((char)letterIndex == '\n')
+        {
+            yOffset -= fontSize;
+            xOffset = 0;
+            continue;
+        }
+        xOffset += fontSize;
+    }
+
+    m_rectBatch.add(vertices.data(), indices.data(), vertices.size() / 8, indices.size());
+}
+
 void Renderer::fillBackground(int color)
 {
     float rgb[3];
