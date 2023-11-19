@@ -132,9 +132,9 @@ void Renderer::drawText(const char* text, const Font* font, float x, float y, fl
     while(text[charCounter] != '\0') 
     {
         int letterIndex = (int)text[charCounter++];
-        
+
         int cellSize = font->getCellSize();
-        float textureSize = textureSize;
+        float textureSize = font->width;
         int cellGridWidth = std::floor(textureSize / cellSize);
 
         Vector cellPos = Vector(
@@ -146,10 +146,10 @@ void Renderer::drawText(const char* text, const Font* font, float x, float y, fl
         cellPos /= (float)textureSize;
 
         float vertexQuad[] = {
-            x + xOffset,            y + yOffset + fontSize, 0.0f, rgb[0], rgb[1], rgb[2], cellPos.x,                              cellPos.y + cellSize / textureSize,
+            x + xOffset,            y + yOffset + fontSize, 0.0f, rgb[0], rgb[1], rgb[2], cellPos.x,                          cellPos.y + cellSize / textureSize,
             x + xOffset + fontSize, y + yOffset + fontSize, 0.0f, rgb[0], rgb[1], rgb[2], cellPos.x + cellSize / textureSize, cellPos.y + cellSize / textureSize,
             x + xOffset + fontSize, y + yOffset,            0.0f, rgb[0], rgb[1], rgb[2], cellPos.x + cellSize / textureSize, cellPos.y,
-            x + xOffset,            y + yOffset,            0.0f, rgb[0], rgb[1], rgb[2], cellPos.x,                              cellPos.y
+            x + xOffset,            y + yOffset,            0.0f, rgb[0], rgb[1], rgb[2], cellPos.x,                          cellPos.y
         };
 
         unsigned int letterVertexCount = vertices.size() / 8;
