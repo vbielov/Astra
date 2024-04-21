@@ -9,12 +9,34 @@
                 "${workspaceFolder}/lib/glfw-3.3.8/include",
                 "${workspaceFolder}/vendor"
             ],
-            "defines": [],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
             "compilerPath": "/usr/bin/gcc",
-            "cStandard": "c17",
-            "cppStandard": "c++14",
             "intelliSenseMode": "linux-gcc-x64",
-            "configurationProvider": "ms-vscode.cmake-tools"
+            "cppStandard": "c++20",
+            "configurationProvider": "ms-vscode.cpptools"
+        },
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/lib/glew-2.2.0/include",
+                "${workspaceFolder}/lib/glfw-3.3.8/include",
+                "${workspaceFolder}/vendor"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "/usr/bin/gcc",
+            "intelliSenseMode": "linux-gcc-x64",
+            "cppStandard": "c++20",
+            "configurationProvider": "ms-vscode.cpptools"
         }
     ],
     "version": 4

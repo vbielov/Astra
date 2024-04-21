@@ -20,7 +20,7 @@ void Renderer::drawImage(Image* image, float sx, float sy, float sWidth, float s
         dx,          dy + dHeight, 0, 1, 1, 1,  sx / image->width,               (sy + sHeight) / image->height,
         dx + dWidth, dy + dHeight, 0, 1, 1, 1, (sx + sWidth) / image->width,     (sy + sHeight) / image->height,
         dx + dWidth, dy,           0, 1, 1, 1, (sx + sWidth) / image-> width,    sy / image->height,
-        dx,          dy,           0, 1, 1, 1,  sx / image-> width, 
+        dx,          dy,           0, 1, 1, 1,  sx / image-> width,              sy / image->height 
     };
 
     m_rectBatch.add(&vertices[0], nullptr, 4, 0);
@@ -28,7 +28,8 @@ void Renderer::drawImage(Image* image, float sx, float sy, float sWidth, float s
 
 void Renderer::drawRect(float x, float y, float width, float height, int color)
 {
-    std::unique_ptr<float[]> rgb = Batch::hexToRGB(color);
+    float rgb[3];
+    Batch::hexToRGB(color, &rgb[0]);
 
     float vertices[] = {
         x,          y + height, 0.0f, rgb[0], rgb[1], rgb[2], -1, -1,
@@ -42,7 +43,8 @@ void Renderer::drawRect(float x, float y, float width, float height, int color)
 
 void Renderer::fillBackground(int color)
 {
-    std::unique_ptr<float[]> rgb = Batch::hexToRGB(color);
+    float rgb[3];
+    Batch::hexToRGB(color, &rgb[0]);
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(rgb[0], rgb[1], rgb[2], 1.0f);
 }

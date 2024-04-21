@@ -12,6 +12,8 @@ set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(LIBRARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 
+add_definitions(-Wall -Wextra)
+
 if (UNIX)
     find_package(OpenGL REQUIRED)
     find_package(X11 REQUIRED)

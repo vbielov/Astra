@@ -15,7 +15,7 @@ public:
     void sendMVPUniform();
     virtual void render() = 0;
 
-    static std::unique_ptr<float[]> hexToRGB(int hex);
+    static void hexToRGB(int hex, float* rgbOut);
 protected:
     unsigned int m_maxVertices;
     unsigned int m_usedVertices;

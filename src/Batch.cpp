@@ -88,15 +88,9 @@ unsigned int Batch::compileShader(const char *source, int type)
     return shader;
 }
 
-std::unique_ptr<float[]> Batch::hexToRGB(int hex)
+void Batch::hexToRGB(int hex, float* rgbOut)
 {
-    std::unique_ptr<float[]> rgb(new float[3]);
-    int i = 3;
-    // for some odd reason, the release version didn't liked while loop here
-    for(; i >= 0 ;) 
-    {
-        rgb[--i] = (float)(hex & 0xFF) / 255.0f;
-        hex >>= 8; 
-    }
-    return rgb;
+    rgbOut[0] = ((hex >> 16) & 0xFF) / 255.0f;
+    rgbOut[1] = ((hex >> 8) & 0xFF) / 255.0;
+    rgbOut[2] = (hex & 0xFF) / 255.0f;
 }
