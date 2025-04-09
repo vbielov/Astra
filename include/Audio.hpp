@@ -3,6 +3,7 @@
 #include <fstream>
 #include <vector>
 #include "miniaudio.h"
+#include <stdint.h>
 
 struct AudioSource
 {

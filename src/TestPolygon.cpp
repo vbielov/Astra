@@ -82,7 +82,7 @@ void TestPolygon::generateRandomPolygon()
 
     // Generate random points
     Vector points[N_MAX];
-    std::srand((unsigned int)std::time(nullptr) + (int)(this));
+    std::srand((unsigned int)std::time(nullptr) + (size_t)(this));
     for(int n = 0; n < N_MAX; n++)
     {
         int rndX = LOW_DIST + std::rand() % (HIGH_DIST - LOW_DIST);
